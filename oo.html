@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bangalore Institute of Technology - Slot Booking Management</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-dark: #030712;
+            --card-bg: rgba(255, 255, 255, 0.96);
+            --text: #0f172a;
+            --text-light: #64748b;
+            --border: #cbd5e1;
+            --gold: #fbbf24;
+            --google-blue: #4285F4;
+            --google-red: #EA4335;
+            --google-yellow: #FBBC05;
+            --google-green: #34A853;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text);
+            padding: 16px;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* -------------------------------------------------------------
+           1. ENTRANCE GATE OVERLAY & BURST ANIMATIONS
+        ------------------------------------------------------------- */
+        #gate-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 2000px;
+            background: radial-gradient(circle at center, #1e1b4b 0%, #030712 100%);
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        /* Pillars with Gold Trim */
+        .pillar {
+            position: absolute;
+            top: 0;
+            width: 60px;
+            height: 100%;
+            background: linear-gradient(90deg, #0f172a, #334155, #1e293b);
+            border-left: 2px solid var(--gold);
+            border-right: 2px solid #475569;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.9), 0 0 25px rgba(0,0,0,0.8);
+            z-index: 10005;
+        }
+        .pillar-left { left: 0; }
+        .pillar-right { right: 0; }
+
+        @media(min-width: 768px) {
+            .pillar { width: 90px; }
+        }
+
+        /* Wrought-Iron Gate Doors */
+        .gate-door {
+            position: absolute;
+            top: 0;
+            width: 50%;
+            height: 100%;
+            background: radial-gradient(circle at center, #1e1b4b 0%, #0b0f19 100%);
+            border-top: 10px solid var(--gold);
+            border-bottom: 10px solid #1e1b4b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 1.5s cubic-bezier(0.77, 0, 0.175, 1);
+            box-shadow: inset 0 0 80px rgba(0,0,0,0.95);
+        }
+
+        .gate-left {
+            left: 0;
+            border-right: 3px solid var(--gold);
+            transform-origin: left center;
+        }
+
+        .gate-right {
+            right: 0;
+            border-left: 3px solid var(--gold);
+            transform-origin: right center;
+        }
+
+        .gate-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.3;
+            background-image: radial-gradient(var(--gold) 1px, transparent 1px), radial-gradient(#6366f1 1px, #030712 1px);
+            background-size: 30px 30px;
+            background-position: 0 0, 15px 15px;
+        }
+
+        /* Clean White Circular Badge for Logo Visibility */
+        .logo-badge {
+            background: #ffffff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 25px rgba(251, 191, 36, 0.7);
+            border: 3px solid var(--gold);
+        }
+
+        .medallion-logo-badge {
+            width: 55px;
+            height: 55px;
+            padding: 6px;
+            margin-bottom: 6px;
+        }
+
+        .burst-logo-badge {
+            width: 80px;
+            height: 80px;
+            padding: 10px;
+            margin-bottom: 12px;
+        }
+
+        /* Centered Gold Welcome Medallion */
+        #welcome-medallion {
+            position: absolute;
+            z-index: 10010;
+            text-align: center;
+            padding: 16px 28px;
+            max-width: 90vw;
+            background: linear-gradient(135deg, #312e81 0%, #4338ca 100%);
+            border: 3px solid var(--gold);
+            border-radius: 50px;
+            box-shadow: 0 0 30px rgba(251, 191, 36, 0.5), 0 0 60px rgba(99, 102, 241, 0.7);
+            transition: all 0.4s ease;
+            animation: pulseMedallion 2.5s infinite alternate;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        @media(min-width: 768px) {
+            #welcome-medallion { padding: 22px 42px; }
+        }
+
+        @keyframes pulseMedallion {
+            0% { transform: scale(1); box-shadow: 0 0 25px rgba(251, 191, 36, 0.4); }
+            100% { transform: scale(1.05); box-shadow: 0 0 50px rgba(251, 191, 36, 0.8); }
+        }
+
+        .welcome-text {
+            font-size: clamp(1.3rem, 4.5vw, 2.2rem);
+            font-weight: 900;
+            letter-spacing: 4px;
+            background: linear-gradient(90deg, #fef08a, #fbbf24, #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+        }
+
+        .welcome-subtext {
+            color: #c7d2fe;
+            font-size: clamp(0.65rem, 2.2vw, 0.8rem);
+            letter-spacing: 1px;
+            margin-top: 2px;
+        }
+
+        /* College Fire-Burst Animation Overlay */
+        #college-pop-banner {
+            opacity: 0;
+            transform: scale(0.2);
+            text-align: center;
+            z-index: 9998;
+            transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.4);
+            pointer-events: none;
+            position: absolute;
+            width: 90vw;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #college-pop-banner.show {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .styled-college-title {
+            font-size: clamp(1.6rem, 5vw, 3.2rem);
+            font-weight: 900;
+            line-height: 1.2;
+            background: linear-gradient(90deg, #38bdf8, #a78bfa, #f472b6, #fbbf24);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientShift 3s ease infinite, fireGlow 1.5s infinite alternate;
+            margin-bottom: 8px;
+            word-wrap: break-word;
+        }
+
+        .styled-college-sub {
+            color: #e2e8f0;
+            font-size: clamp(0.85rem, 3vw, 1.25rem);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        @keyframes fireGlow {
+            0% { filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.6)); }
+            100% { filter: drop-shadow(0 0 30px rgba(251, 191, 36, 0.9)); }
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        #gate-overlay.open .gate-left { transform: rotateY(-115deg); }
+        #gate-overlay.open .gate-right { transform: rotateY(115deg); }
+        #gate-overlay.open #welcome-medallion { opacity: 0; transform: scale(0.3); }
+        #gate-overlay.fade-out { opacity: 0; visibility: hidden; }
+
+        /* -------------------------------------------------------------
+           2. 4-YEAR ENGINEERING BACKGROUND CANVAS
+        ------------------------------------------------------------- */
+        .engg-bg-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+            opacity: 0.22;
+        }
+
+        .bg-element {
+            position: absolute;
+            color: #94a3b8;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: 600;
+            white-space: nowrap;
+            user-select: none;
+            font-size: clamp(0.7rem, 2vw, 0.95rem);
+            animation: floatUpDown 8s ease-in-out infinite alternate;
+        }
+
+        @keyframes floatUpDown {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(2deg); }
+            100% { transform: translateY(10px) rotate(-1deg); }
+        }
+
+        /* -------------------------------------------------------------
+           3. MAIN DASHBOARD & HEADER STYLES
+        ------------------------------------------------------------- */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        header {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            margin-bottom: 24px;
+            border: 2px solid rgba(99, 102, 241, 0.3);
+            border-top: 6px solid var(--primary);
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .college-logo {
+            width: 65px;
+            height: 65px;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+            transition: transform 0.3s ease;
+        }
+
+        .college-logo:hover {
+            transform: scale(1.08);
+        }
+
+        header h2 {
+            font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 4px;
+        }
+
+        header h1 {
+            color: var(--text);
+            font-size: clamp(1.4rem, 4vw, 2.1rem);
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        header p {
+            color: var(--text-light);
+            font-size: clamp(0.8rem, 2vw, 0.95rem);
+        }
+
+        #notification-banner {
+            display: none;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+            animation: bounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) infinite alternate;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.01); }
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media(max-width: 768px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(8px);
+            border: 2px solid rgba(99, 102, 241, 0.3);
+            border-left: 5px solid var(--primary);
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(99, 102, 241, 0.15);
+            margin-bottom: 20px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(99, 102, 241, 0.25);
+        }
+
+        .card h2 {
+            font-size: 1.2rem;
+            margin-bottom: 16px;
+            color: var(--text);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-light);
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        input:focus, select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .machine-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .machine-box {
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            background: #fff;
+            transition: transform 0.2s ease;
+        }
+
+        .machine-box:hover { transform: scale(1.03); }
+        .machine-box.available { border-left: 5px solid var(--success); }
+        .machine-box.busy { border-left: 5px solid var(--danger); }
+        .machine-box h3 { font-size: 0.95rem; margin-bottom: 4px; }
+        
+        .status-badge {
+            display: inline-block;
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+        .status-badge.available { background: #d1fae5; color: #065f46; }
+        .status-badge.busy { background: #fee2e2; color: #991b1b; }
+
+        .queue-list {
+            list-style: none;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .queue-item {
+            background: rgba(248, 250, 252, 0.95);
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            animation: fadeInItem 0.4s ease-out;
+            transition: all 0.25s ease;
+        }
+
+        @keyframes fadeInItem {
+            from { opacity: 0; transform: translateX(-15px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .queue-item:hover {
+            border-color: var(--primary);
+            background: #f1f5f9;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+            transform: translateX(4px);
+        }
+
+        .queue-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .queue-actions {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed var(--border);
+            display: flex;
+            gap: 8px;
+        }
+
+        .queue-actions button {
+            padding: 6px 12px;
+            font-size: 0.85rem;
+        }
+
+        .btn-edit { background-color: var(--warning); }
+        .btn-edit:hover { background-color: #d97706; }
+
+        .btn-cancel { background-color: var(--danger); }
+        .btn-cancel:hover { background-color: #dc2626; }
+
+        .empty-queue {
+            text-align: center;
+            color: var(--text-light);
+            padding: 20px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<!-- 1. ENTRANCE GATE OVERLAY WITH WHITE CIRCULAR BADGE LOGO -->
+<div id="gate-overlay" onclick="openCampusGate()">
+    <div class="pillar pillar-left"></div>
+    <div class="pillar pillar-right"></div>
+    
+    <div class="gate-door gate-left">
+        <div class="gate-pattern"></div>
+    </div>
+    <div class="gate-door gate-right">
+        <div class="gate-pattern"></div>
+    </div>
+    
+    <div id="welcome-medallion">
+        <div class="logo-badge medallion-logo-badge">
+            <img src="https://upload.wikimedia.org/wikipedia/en/8/87/Bangalore_Institute_of_Technology_logo.png" alt="BIT Logo" style="width: 100%; height: 100%; object-fit: contain;">
+        </div>
+        <div class="welcome-text">✨ WELCOME</div>
+        <div class="welcome-subtext">TAP ANYWHERE TO ENTER BIT CAMPUS</div>
+    </div>
+
+    <div id="college-pop-banner">
+        <div class="logo-badge burst-logo-badge">
+            <img src="https://upload.wikimedia.org/wikipedia/en/8/87/Bangalore_Institute_of_Technology_logo.png" alt="BIT Logo" style="width: 100%; height: 100%; object-fit: contain;">
+        </div>
+        <div class="styled-college-title">Bangalore Institute of Technology</div>
+        <div class="styled-college-sub">Laundry Slot Booking Management</div>
+    </div>
+</div>
+
+<!-- 2. 4-YEAR ENGINEERING BACKGROUND CANVAS -->
+<div class="engg-bg-layer">
+    <div class="bg-element" style="top: 8%; left: 4%;">#include &lt;stdio.h&gt;<br>int main() { printf("Hello BIT!"); }</div>
+    <div class="bg-element" style="top: 22%; left: 68%;">for(int sem=1; sem&lt;=8; sem++) { study(); }</div>
+    <div class="bg-element" style="top: 58%; left: 75%;">while(coffee &gt; 0) { code(); }</div>
+    <div class="bg-element" style="top: 78%; left: 8%;">struct Student { char name[50]; float gpa; };</div>
+
+    <div class="bg-element" style="top: 14%; left: 40%;">V = I * R | [BC547 Transistor Switch]</div>
+    <div class="bg-element" style="top: 42%; left: 4%;">[AND Gate: A=1, B=1 ➔ Y=1]</div>
+    <div class="bg-element" style="top: 68%; left: 45%;">LM358 Op-Amp | LDR Light Sensor Circuit</div>
+
+    <div class="bg-element" style="top: 32%; left: 78%; color: var(--google-blue);">Google Developer Student Club (GDSC)</div>
+    <div class="bg-element" style="top: 48%; left: 55%; color: var(--google-green);">Google Cloud & Cybersecurity Certs</div>
+    <div class="bg-element" style="top: 84%; left: 62%; color: var(--google-yellow);">git commit -m "Final Year Project MVP"</div>
+
+    <div class="bg-element" style="top: 4%; left: 72%;">Semester 1: C Programming & Electronics</div>
+    <div class="bg-element" style="top: 28%; left: 12%;">Semester 3: Data Structures & Algorithms</div>
+    <div class="bg-element" style="top: 72%; left: 22%;">Semester 6: Mini Projects & Hackathons</div>
+    <div class="bg-element" style="top: 88%; left: 38%;">Semester 8: Placements & Final Thesis</div>
+</div>
+
+<!-- 3. MAIN DASHBOARD CONTAINER -->
+<div class="container">
+    <header>
+        <div class="header-content">
+            <img src="https://upload.wikimedia.org/wikipedia/en/8/87/Bangalore_Institute_of_Technology_logo.png" alt="BIT Logo" class="college-logo">
+            <div>
+                <h2>Bangalore Institute of Technology, Bangalore</h2>
+                <h1>SLOT BOOKING MANAGEMENT</h1>
+            </div>
+        </div>
+        <p style="margin-top: 8px;">Hostel Laundry System | Operating Hours: 06:00 AM - 10:00 PM</p>
+    </header>
+
+    <div id="notification-banner">
+        🔔 <strong>Alert:</strong> <span id="notification-text"></span>
+    </div>
+
+    <div class="grid">
+        <div>
+            <div class="card">
+                <h2 id="form-heading">Reserve a Time Slot</h2>
+                <form id="bookingForm">
+                    <input type="hidden" id="editIndex" value="-1">
+                    <div class="form-group">
+                        <label for="studentName">Student Name & Room No</label>
+                        <input type="text" id="studentName" placeholder="e.g., Sujan K (Room 304)" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="machineSelect">Select Machine / Unit</label>
+                        <select id="machineSelect">
+                            <option value="Machine 1 (Washer)">Machine 1 (Washer)</option>
+                            <option value="Machine 2 (Washer)">Machine 2 (Washer)</option>
+                            <option value="Machine 3 (Washer)">Machine 3 (Washer)</option>
+                            <option value="Machine 4 (Dryer)">Machine 4 (Dryer)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="timeSlot">Choose Time Slot (06:00 AM - 10:00 PM)</label>
+                        <select id="timeSlot">
+                            <option value="06:00 AM - 07:00 AM">06:00 AM - 07:00 AM</option>
+                            <option value="07:00 AM - 08:00 AM">07:00 AM - 08:00 AM</option>
+                            <option value="08:00 AM - 09:00 AM">08:00 AM - 09:00 AM</option>
+                            <option value="09:00 AM - 10:00 AM">09:00 AM - 10:00 AM</option>
+                            <option value="10:00 AM - 11:00 AM">10:00 AM - 11:00 AM</option>
+                            <option value="11:00 AM - 12:00 PM">11:00 AM - 12:00 PM</option>
+                            <option value="12:00 PM - 01:00 PM">12:00 PM - 01:00 PM</option>
+                            <option value="01:00 PM - 02:00 PM">01:00 PM - 02:00 PM</option>
+                            <option value="02:00 PM - 03:00 PM">02:00 PM - 03:00 PM</option>
+                            <option value="03:00 PM - 04:00 PM">03:00 PM - 04:00 PM</option>
+                            <option value="04:00 PM - 05:00 PM">04:00 PM - 05:00 PM</option>
+                            <option value="05:00 PM - 06:00 PM">05:00 PM - 06:00 PM</option>
+                            <option value="06:00 PM - 07:00 PM">06:00 PM - 07:00 PM</option>
+                            <option value="07:00 PM - 08:00 PM">07:00 PM - 08:00 PM</option>
+                            <option value="08:00 PM - 09:00 PM">08:00 PM - 09:00 PM</option>
+                            <option value="09:00 PM - 10:00 PM">09:00 PM - 10:00 PM</option>
+                        </select>
+                    </div>
+                    <button type="submit" id="submitBtn">Book Slot & Join Queue</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>Live Machine Status</h2>
+                <div class="machine-grid">
+                    <div class="machine-box available">
+                        <h3>Machine 1</h3>
+                        <span class="status-badge available">Available</span>
+                    </div>
+                    <div class="machine-box available">
+                        <h3>Machine 2</h3>
+                        <span class="status-badge available">Available</span>
+                    </div>
+                    <div class="machine-box available">
+                        <h3>Machine 3</h3>
+                        <span class="status-badge available">Available</span>
+                    </div>
+                    <div class="machine-box available">
+                        <h3>Machine 4</h3>
+                        <span class="status-badge available">Available</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <div class="card">
+                <h2>Active Booking Queue (Click item to Edit/Cancel)</h2>
+                <div class="queue-list" id="queueList">
+                    <div class="empty-queue">No slots booked yet. Add a booking to test!</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let isGateOpened = false;
+
+    function openCampusGate() {
+        if (isGateOpened) return;
+        isGateOpened = true;
+
+        const gateOverlay = document.getElementById('gate-overlay');
+        const collegePop = document.getElementById('college-pop-banner');
+
+        gateOverlay.classList.add('open');
+
+        // Burst-in animation for college title
+        setTimeout(() => {
+            collegePop.classList.add('show');
+        }, 400);
+
+        // Smooth transition into dashboard
+        setTimeout(() => {
+            gateOverlay.classList.add('fade-out');
+        }, 2600);
+    }
+
+    let queueData = JSON.parse(localStorage.getItem('bit_laundry_queue')) || [];
+    let expandedIndex = -1;
+
+    const bookingForm = document.getElementById('bookingForm');
+    const queueList = document.getElementById('queueList');
+    const notificationBanner = document.getElementById('notification-banner');
+    const notificationText = document.getElementById('notification-text');
+    const formHeading = document.getElementById('form-heading');
+    const submitBtn = document.getElementById('submitBtn');
+    const editIndexInput = document.getElementById('editIndex');
+
+    function saveQueue() {
+        localStorage.setItem('bit_laundry_queue', JSON.stringify(queueData));
+    }
+
+    function renderQueue() {
+        queueList.innerHTML = '';
+        
+        if (queueData.length === 0) {
+            queueList.innerHTML = '<div class="empty-queue">No slots booked yet. Add a booking to test!</div>';
+            notificationBanner.style.display = 'none';
+            return;
+        }
+
+        let nextUserFound = false;
+
+        queueData.forEach((item, index) => {
+            const div = document.createElement('div');
+            div.className = 'queue-item';
+            
+            let statusColor = 'var(--text-light)';
+            let statusText = `Waiting (Pos #${index + 1})`;
+            
+            if(index === 0) {
+                statusColor = 'var(--danger)';
+                statusText = 'Active Now';
+            } else if(index === 1) {
+                statusColor = 'var(--warning)';
+                statusText = 'Next in Queue';
+                triggerNotification(item.name, item.machine, item.timeSlot);
+                nextUserFound = true;
+            }
+
+            if(!nextUserFound && index !== 1) {
+                notificationBanner.style.display = 'none';
+            }
+
+            const showActions = (expandedIndex === index) ? 'flex' : 'none';
+
+            div.innerHTML = `
+                <div class="queue-header" onclick="toggleActions(${index})">
+                    <div>
+                        <strong>${item.name}</strong><br>
+                        <small style="color:var(--text-light);">${item.machine} | 🕒 ${item.timeSlot}</small>
+                    </div>
+                    <span style="color: ${statusColor}; font-weight:600; font-size:0.85rem;">${statusText}</span>
+                </div>
+                <div class="queue-actions" style="display: ${showActions};">
+                    <button type="button" class="btn-edit" onclick="editBooking(event, ${index})">Edit Details</button>
+                    <button type="button" class="btn-cancel" onclick="cancelBooking(event, ${index})">Cancel Booking</button>
+                </div>
+            `;
+            queueList.appendChild(div);
+        });
+    }
+
+    function toggleActions(index) {
+        expandedIndex = (expandedIndex === index) ? -1 : index;
+        renderQueue();
+    }
+
+    function triggerNotification(name, machine, timeSlot) {
+        notificationText.innerText = `Attention ${name}! You are next in queue for ${machine} (${timeSlot}). Please get your laundry ready!`;
+        notificationBanner.style.display = 'block';
+    }
+
+    bookingForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const name = document.getElementById('studentName').value;
+        const machine = document.getElementById('machineSelect').value;
+        const timeSlot = document.getElementById('timeSlot').value;
+        const editIdx = parseInt(editIndexInput.value);
+
+        if (editIdx === -1) {
+            queueData.push({ name: name, machine: machine, timeSlot: timeSlot });
+            alert('Slot successfully booked and added to queue!');
+        } else {
+            queueData[editIdx] = { name: name, machine: machine, timeSlot: timeSlot };
+            editIndexInput.value = "-1";
+            formHeading.innerText = "Reserve a Time Slot";
+            submitBtn.innerText = "Book Slot & Join Queue";
+            alert('Booking successfully updated!');
+        }
+        
+        saveQueue();
+        bookingForm.reset();
+        expandedIndex = -1;
+        renderQueue();
+    });
+
+    function editBooking(event, index) {
+        event.stopPropagation();
+        const item = queueData[index];
+        document.getElementById('studentName').value = item.name;
+        document.getElementById('machineSelect').value = item.machine;
+        document.getElementById('timeSlot').value = item.timeSlot;
+        
+        editIndexInput.value = index;
+        formHeading.innerText = "Edit Booking Details";
+        submitBtn.innerText = "Update Booking";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function cancelBooking(event, index) {
+        event.stopPropagation();
+        if (confirm("Are you sure you want to cancel this booking?")) {
+            queueData.splice(index, 1);
+            saveQueue();
+            expandedIndex = -1;
+            renderQueue();
+            alert('Booking cancelled successfully.');
+        }
+    }
+
+    renderQueue();
+</script>
+
+</body>
+</html>
